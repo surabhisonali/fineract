@@ -58,6 +58,7 @@ import org.apache.fineract.infrastructure.core.api.ApiRequestParameterHelper;
 import org.apache.fineract.infrastructure.core.data.CommandProcessingResult;
 import org.apache.fineract.infrastructure.core.data.UploadRequest;
 import org.apache.fineract.infrastructure.core.exception.UnrecognizedQueryParamException;
+import org.apache.fineract.infrastructure.core.exception.GeneralPlatformDomainRuleException;
 import org.apache.fineract.infrastructure.core.serialization.ApiRequestJsonSerializationSettings;
 import org.apache.fineract.infrastructure.core.serialization.DefaultToApiJsonSerializer;
 import org.apache.fineract.infrastructure.core.service.Page;
@@ -128,11 +129,22 @@ public class SavingsAccountsApiResource {
             @QueryParam("offset") @Parameter(description = "offset") final Integer offset,
             @QueryParam("limit") @Parameter(description = "limit") final Integer limit,
             @QueryParam("orderBy") @Parameter(description = "orderBy") final String orderBy,
-            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder) {
+            @QueryParam("sortOrder") @Parameter(description = "sortOrder") final String sortOrder,
+            @QueryParam("birthdayMonth") @Parameter(description = "birthdayMonth") final Integer birthdayMonth,
+            @QueryParam("birthdayDay") @Parameter(description = "birthdayDay") final Integer birthdayDay) {
 
         context.authenticatedUser().validateHasReadPermission(SavingsApiConstants.SAVINGS_ACCOUNT_RESOURCE_NAME);
+        
+        if (birthdayMonth != null && (birthdayMonth < 1 || birthdayMonth > 12)) {
+            throw new GeneralPlatformDomainRuleException("error.msg.savings.accounts.invalid.birthdayMonth",
+                    "birthdayMonth must be between 1 and 12", birthdayMonth);
+        }
+        if (birthdayDay != null && (birthdayDay < 1 || birthdayDay > 31)) {
+            throw new GeneralPlatformDomainRuleException("error.msg.savings.accounts.invalid.birthdayDay",
+                    "birthdayDay must be between 1 and 31", birthdayDay);
+        }
 
-        final SearchParameters searchParameters = SearchParameters.forSavings(sqlSearch, externalId, offset, limit, orderBy, sortOrder);
+        final SearchParameters searchParameters = SearchParameters.forSavings(sqlSearch, externalId, offset, limit, orderBy, sortOrder, birthdayMonth, birthdayDay);
 
         final Page<SavingsAccountData> products = savingsAccountReadPlatformService.retrieveAll(searchParameters);
 

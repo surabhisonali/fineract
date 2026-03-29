@@ -244,6 +244,12 @@ bootJar {
 jib {
     from {
         image = 'azul/zulu-openjdk-alpine:17'
+        platforms {
+            platform {
+                architecture = 'arm64'
+                os = 'linux'
+            }
+        }
     }
 
     to {
